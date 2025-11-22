@@ -6,10 +6,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { CyberThreat } from "@/utils/csvParser";
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+  visualization?: {
+    type: "table" | "bar" | "line" | "pie" | "radar";
+    data: any[];
+    title?: string;
+  };
 }
 
 interface OllamaChatProps {
@@ -31,15 +38,33 @@ export const OllamaChat = ({ data }: OllamaChatProps) => {
     setIsLoading(true);
 
     try {
-      // Prepare context with data summary
-      const dataContext = `Dataset context: This dataset contains ${data.length} cyber security incidents across countries like ${[...new Set(data.map(d => d.country))].join(", ")}. Attack types include ${[...new Set(data.map(d => d.attackType))].join(", ")}. Industries affected: ${[...new Set(data.map(d => d.targetIndustry))].join(", ")}.`;
+      // Prepare detailed data context
+      const dataContext = `You are analyzing a cyber threat dataset with ${data.length} records. Here's the complete data in JSON format:
+${JSON.stringify(data.slice(0, 50), null, 2)}
+
+Available fields: country, year, attackType, targetIndustry, financialLoss, affectedUsers, attackSource, securityVulnerability, defenseMechanism, resolutionTime.
+
+IMPORTANT: You MUST respond in the following structured format:
+
+## Analysis
+[2 concise paragraphs analyzing the data]
+
+## Key Findings
+- [Bullet point 1]
+- [Bullet point 2]
+- [Bullet point 3]
+[2-5 bullets total]
+
+## Visualization Data
+[Provide data for visualization in JSON format. Choose the most appropriate chart type: table, bar, line, pie, or radar]
+Format: {"type": "bar|line|pie|table|radar", "title": "Chart Title", "data": [{"label": "value1", "value": number}, ...]}`;
 
       const response = await fetch(`${ollamaUrl}/api/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "llama2",
-          prompt: `${dataContext}\n\nUser question: ${input}\n\nProvide a detailed analysis based on the cyber threat data.`,
+          prompt: `${dataContext}\n\nUser question: ${input}\n\nAnalyze ONLY the provided CSV data and respond in the specified format with visualization data.`,
           stream: false,
         }),
       });
@@ -49,9 +74,25 @@ export const OllamaChat = ({ data }: OllamaChatProps) => {
       }
 
       const result = await response.json();
+      
+      // Parse response to extract visualization data
+      let visualization;
+      let cleanContent = result.response;
+      
+      const jsonMatch = result.response.match(/\{[\s\S]*"type"[\s\S]*"data"[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          visualization = JSON.parse(jsonMatch[0]);
+          cleanContent = result.response.replace(jsonMatch[0], '').trim();
+        } catch (e) {
+          console.error("Failed to parse visualization data:", e);
+        }
+      }
+
       const assistantMessage: Message = {
         role: "assistant",
-        content: result.response,
+        content: cleanContent,
+        visualization,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -98,10 +139,98 @@ export const OllamaChat = ({ data }: OllamaChatProps) => {
                   : "bg-secondary mr-8"
               }`}
             >
-              <p className="text-sm font-semibold mb-1">
+              <p className="text-sm font-semibold mb-2">
                 {message.role === "user" ? "You" : "AI Assistant"}
               </p>
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              <div className="text-sm whitespace-pre-wrap prose prose-sm max-w-none dark:prose-invert">
+                {message.content}
+              </div>
+              
+              {message.visualization && (
+                <div className="mt-4 bg-background/50 p-4 rounded-lg border border-border">
+                  {message.visualization.title && (
+                    <h4 className="text-sm font-semibold mb-3">{message.visualization.title}</h4>
+                  )}
+                  {message.visualization.type === "table" && (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          {Object.keys(message.visualization.data[0] || {}).map((key) => (
+                            <TableHead key={key}>{key}</TableHead>
+                          ))}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {message.visualization.data.map((row, i) => (
+                          <TableRow key={i}>
+                            {Object.values(row).map((val, j) => (
+                              <TableCell key={j}>{String(val)}</TableCell>
+                            ))}
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                  
+                  {message.visualization.type === "bar" && (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={message.visualization.data}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="label" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="value" fill="hsl(var(--primary))" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
+                  
+                  {message.visualization.type === "line" && (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={message.visualization.data}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="label" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
+                  
+                  {message.visualization.type === "pie" && (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={message.visualization.data}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={(entry) => entry.label}
+                          outerRadius={80}
+                          fill="hsl(var(--primary))"
+                          dataKey="value"
+                        >
+                          {message.visualization.data.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={`hsl(${180 + index * 40}, 70%, 50%)`} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
+                  
+                  {message.visualization.type === "radar" && (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <RadarChart data={message.visualization.data}>
+                        <PolarGrid />
+                        <PolarAngleAxis dataKey="label" />
+                        <PolarRadiusAxis />
+                        <Radar name="Value" dataKey="value" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.6} />
+                        <Tooltip />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+              )}
             </div>
           ))}
           {isLoading && (
