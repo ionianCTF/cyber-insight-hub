@@ -21,13 +21,14 @@ interface Message {
 
 interface OllamaChatProps {
   data: CyberThreat[];
+  ollamaUrl: string;
+  onOllamaUrlChange: (url: string) => void;
 }
 
-export const OllamaChat = ({ data }: OllamaChatProps) => {
+export const OllamaChat = ({ data, ollamaUrl, onOllamaUrlChange }: OllamaChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [ollamaUrl, setOllamaUrl] = useState("http://localhost:11434");
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -115,7 +116,7 @@ Format: {"type": "bar|line|pie|table|radar", "title": "Chart Title", "data": [{"
         <Input
           placeholder="Ollama URL (e.g., http://localhost:11434)"
           value={ollamaUrl}
-          onChange={(e) => setOllamaUrl(e.target.value)}
+          onChange={(e) => onOllamaUrlChange(e.target.value)}
           className="text-sm"
         />
       </div>
