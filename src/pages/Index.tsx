@@ -4,6 +4,7 @@ import { MetricCard } from "@/components/MetricCard";
 import { FilterPanel } from "@/components/FilterPanel";
 import { OllamaChat } from "@/components/OllamaChat";
 import { ChartsSection } from "@/components/ChartsSection";
+import { CSVUpload } from "@/components/CSVUpload";
 import { Shield, DollarSign, Users, Clock } from "lucide-react";
 import { toast } from "sonner";
 
@@ -11,6 +12,7 @@ const Index = () => {
   const [data, setData] = useState<CyberThreat[]>([]);
   const [filteredData, setFilteredData] = useState<CyberThreat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [ollamaUrl, setOllamaUrl] = useState("http://localhost:11434");
 
   useEffect(() => {
     const loadData = async () => {
@@ -29,6 +31,12 @@ const Index = () => {
 
     loadData();
   }, []);
+
+  const handleDataMapped = (mappedData: CyberThreat[]) => {
+    setData(mappedData);
+    setFilteredData(mappedData);
+    toast.success(`Loaded ${mappedData.length} records from your CSV`);
+  };
 
   const handleFilterChange = (filters: {
     country?: string;
@@ -93,6 +101,8 @@ const Index = () => {
         </div>
       </header>
 
+      <CSVUpload onDataMapped={handleDataMapped} ollamaUrl={ollamaUrl} />
+
       <FilterPanel
         countries={uniqueCountries}
         years={uniqueYears}
@@ -130,7 +140,7 @@ const Index = () => {
 
       <ChartsSection data={filteredData} />
 
-      <OllamaChat data={filteredData} />
+      <OllamaChat data={filteredData} ollamaUrl={ollamaUrl} onOllamaUrlChange={setOllamaUrl} />
     </div>
   );
 };
