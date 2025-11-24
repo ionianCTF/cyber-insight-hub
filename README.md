@@ -10,27 +10,38 @@ Overall, the dashboard supports cybersecurity analysts, researchers, educators, 
 
 ### 🚀 Key Features
 
-- **Custom Dataset Upload**  
-  Easily upload a CSV file and automatically generate visual analytics with intelligent column mapping.
+<table>
+<tr>
+<td style="vertical-align: top; width: 50%;">
 
-- **Advanced Filtering**  
-  Filter incidents by:
-  - Country  
-  - Year  
-  - Attack Type  
-  - Industry  
+**Custom Dataset Upload**  
+Easily upload a CSV file and automatically generate visual analytics with intelligent column mapping.
 
-- **High-Level KPIs**
-  - **Total Incidents**
-  - **Financial Impact (USD)**
-  - **Users Affected**
-  - **Average Resolution Time**
+**Advanced Filtering**  
+Filter incidents by:  
+• Country  
+• Year  
+• Attack Type  
+• Industry  
 
-- **Interactive Visualizations**
-  - **Attack Trends Over Time**
-  - **Attack Type Distribution**
-  - **Top Countries by Attacks**
-  - **Industries Under Attack**
+**High-Level KPIs**  
+• Total Incidents  
+• Financial Impact (USD)  
+• Users Affected  
+• Average Resolution Time  
+
+</td>
+<td style="vertical-align: top; width: 50%;">
+
+**Interactive Visualizations**  
+• Attack Trends Over Time  
+• Attack Type Distribution  
+• Top Countries by Attacks  
+• Industries Under Attack  
+
+</td>
+</tr>
+</table>
 
 - **AI Research Assistant:** An integrated AI Research Assistant enhances the analytical capabilities of the dashboard by providing narrative explanations and data interpretations. It summarizes patterns, describes attack mechanisms, and identifies correlations and vulnerabilities based on the uploaded dataset. Users can ask natural-language questions to gain deep, contextual understanding of the cyber threat landscape.
 
