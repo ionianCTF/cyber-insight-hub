@@ -1,8 +1,8 @@
 ## 📊 Cyber Threat Intelligence Dashboard
 
-The **Cyber Threat Intelligence Dashboard** is an interactive analytics platform designed to visualize, explore, and interpret global cybersecurity incident data. Built for security analysts, researchers, and decision-makers, it transforms complex datasets into actionable intelligence.
+The **Cyber Threat Intelligence Dashboard** is an interactive platform designed to analyze and visualize global cybersecurity incidents. It enables users to upload custom datasets and instantly transform them into meaningful insights through automated column mapping and dynamic analytics. The interface supports advanced filtering by country, year, attack type, and industry, allowing users to narrow down data to highly specific threat intelligence scenarios.
 
-The Cyber Threat Intelligence Dashboard is an interactive platform designed to analyze and visualize global cybersecurity incidents. It enables users to upload custom datasets and instantly transform them into meaningful insights through automated column mapping and dynamic analytics. The interface supports advanced filtering by country, year, attack type, and industry, allowing users to narrow down data to highly specific threat intelligence scenarios.
+
 
 The dashboard presents key performance indicators such as the total number of incidents, financial impact in USD, the number of affected users, and the average resolution time. These metrics offer a clear overview of the scale and severity of cyberattacks across different contexts. Users can explore several interactive visualizations, including attack trends over time, the distribution of attack types, the countries most heavily targeted, and the industries facing the highest number of threats.
 
