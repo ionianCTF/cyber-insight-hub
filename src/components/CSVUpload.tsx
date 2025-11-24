@@ -13,6 +13,7 @@ interface CSVUploadProps {
 
 export const CSVUpload = ({ onDataMapped, ollamaUrl }: CSVUploadProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStep, setProcessingStep] = useState("");
   const { toast } = useToast();
 
   const parseCSVText = (text: string): string[][] => {
@@ -82,7 +83,10 @@ Return ONLY a JSON object mapping each target field to the CSV column name. Exam
 
     setIsProcessing(true);
     try {
+      setProcessingStep("Reading CSV file...");
       const text = await file.text();
+      
+      setProcessingStep("Parsing CSV structure...");
       const rows = parseCSVText(text);
       
       if (rows.length < 2) {
@@ -92,12 +96,15 @@ Return ONLY a JSON object mapping each target field to the CSV column name. Exam
       const headers = rows[0];
       const dataRows = rows.slice(1);
 
+      setProcessingStep("Analyzing columns with AI...");
       toast({
         title: "Mapping columns...",
         description: "Using AI to map your CSV columns",
       });
 
       const mapping = await mapColumnsWithOllama(headers, dataRows[0]);
+
+      setProcessingStep("Transforming data...");
 
       const mappedData: CyberThreat[] = dataRows.map(row => {
         const getVal = (field: string) => {
@@ -133,6 +140,7 @@ Return ONLY a JSON object mapping each target field to the CSV column name. Exam
       });
     } finally {
       setIsProcessing(false);
+      setProcessingStep("");
       event.target.value = '';
     }
   };
@@ -162,7 +170,7 @@ Return ONLY a JSON object mapping each target field to the CSV column name. Exam
             {isProcessing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
+                {processingStep || "Processing..."}
               </>
             ) : (
               <>
