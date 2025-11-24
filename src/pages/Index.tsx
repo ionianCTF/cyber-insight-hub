@@ -69,10 +69,10 @@ const Index = () => {
     ? filteredData.reduce((sum, d) => sum + d.resolutionTime, 0) / filteredData.length
     : 0;
 
-  const uniqueCountries = [...new Set(data.map((d) => d.country))].sort();
-  const uniqueYears = [...new Set(data.map((d) => d.year))].sort();
-  const uniqueAttackTypes = [...new Set(data.map((d) => d.attackType))].sort();
-  const uniqueIndustries = [...new Set(data.map((d) => d.targetIndustry))].sort();
+  const uniqueCountries = [...new Set(data.map((d) => d.country).filter(v => v && v.trim()))].sort();
+  const uniqueYears = [...new Set(data.map((d) => d.year).filter(v => v && !isNaN(v)))].sort();
+  const uniqueAttackTypes = [...new Set(data.map((d) => d.attackType).filter(v => v && v.trim()))].sort();
+  const uniqueIndustries = [...new Set(data.map((d) => d.targetIndustry).filter(v => v && v.trim()))].sort();
 
   if (isLoading) {
     return (
