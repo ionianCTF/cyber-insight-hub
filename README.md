@@ -12,7 +12,7 @@ Overall, the dashboard supports cybersecurity analysts, researchers, educators, 
 
 <table>
 <tr>
-<td style="vertical-align: top; width: 50%;">
+<td style="vertical-align: top; width: 30%;">
 
 **Custom Dataset Upload**  
 Easily upload a CSV file and automatically generate visual analytics with intelligent column mapping.
@@ -31,7 +31,7 @@ Filter incidents by:
 • Average Resolution Time  
 
 </td>
-<td style="vertical-align: top; width: 50%;">
+<td style="vertical-align: top; width: 70%;">
 
 **Interactive Visualizations**  
 • Attack Trends Over Time  
