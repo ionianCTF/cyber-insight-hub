@@ -29,6 +29,7 @@ export const OllamaChat = ({ data, ollamaUrl, onOllamaUrlChange }: OllamaChatPro
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [streamingContent, setStreamingContent] = useState("");
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -39,6 +40,8 @@ export const OllamaChat = ({ data, ollamaUrl, onOllamaUrlChange }: OllamaChatPro
     setIsLoading(true);
 
     try {
+      setStreamingContent("Connecting to AI...");
+      
       // Prepare detailed data context
       const dataContext = `You are analyzing a cyber threat dataset with ${data.length} records. Here's the complete data in JSON format:
 ${JSON.stringify(data.slice(0, 50), null, 2)}
@@ -60,13 +63,15 @@ IMPORTANT: You MUST respond in the following structured format:
 [Provide data for visualization in JSON format. Choose the most appropriate chart type: table, bar, line, pie, or radar]
 Format: {"type": "bar|line|pie|table|radar", "title": "Chart Title", "data": [{"label": "value1", "value": number}, ...]}`;
 
+      setStreamingContent("Analyzing dataset...");
+      
       const response = await fetch(`${ollamaUrl}/api/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "llama2",
           prompt: `${dataContext}\n\nUser question: ${input}\n\nAnalyze ONLY the provided CSV data and respond in the specified format with visualization data.`,
-          stream: false,
+          stream: true,
         }),
       });
 
@@ -74,7 +79,36 @@ Format: {"type": "bar|line|pie|table|radar", "title": "Chart Title", "data": [{"
         throw new Error("Failed to connect to Ollama");
       }
 
-      const result = await response.json();
+      setStreamingContent("Generating response...");
+      
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullResponse = "";
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split("\n").filter(line => line.trim());
+
+          for (const line of lines) {
+            try {
+              const json = JSON.parse(line);
+              if (json.response) {
+                fullResponse += json.response;
+                setStreamingContent(fullResponse);
+              }
+            } catch (e) {
+              // Skip invalid JSON lines
+            }
+          }
+        }
+      }
+
+      const result = { response: fullResponse };
+      setStreamingContent("");
       
       // Parse response to extract visualization data
       let visualization;
@@ -102,6 +136,7 @@ Format: {"type": "bar|line|pie|table|radar", "title": "Chart Title", "data": [{"
       console.error("Ollama error:", error);
     } finally {
       setIsLoading(false);
+      setStreamingContent("");
     }
   };
 
@@ -235,9 +270,17 @@ Format: {"type": "bar|line|pie|table|radar", "title": "Chart Title", "data": [{"
             </div>
           ))}
           {isLoading && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="text-sm">Analyzing...</span>
+            <div className="bg-secondary mr-8 p-4 rounded-lg">
+              <p className="text-sm font-semibold mb-2">AI Assistant</p>
+              <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm">{streamingContent || "Processing..."}</span>
+              </div>
+              {streamingContent && (
+                <div className="text-sm whitespace-pre-wrap prose prose-sm max-w-none dark:prose-invert opacity-70">
+                  {streamingContent}
+                </div>
+              )}
             </div>
           )}
         </div>
