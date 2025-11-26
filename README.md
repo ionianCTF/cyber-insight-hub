@@ -31,7 +31,7 @@ Filter incidents by:
 • Average Resolution Time  
 
 </td>
-<td style="vertical-align: top; width: 60%;">
+<td style="vertical-align: top; width: 30%;">
 
 **Interactive Visualizations**  
 • Attack Trends Over Time  
